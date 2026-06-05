@@ -11,7 +11,9 @@
       "--autoLoadProjects"
     ],
     "extensionToLanguage": {
-      ".cs": "csharp"
+      ".cs": "csharp",
+      ".razor": "aspnetcorerazor",
+      ".cshtml": "aspnetcorerazor"
     }
   }
 }
