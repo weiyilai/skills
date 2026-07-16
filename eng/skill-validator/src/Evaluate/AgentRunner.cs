@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using SkillValidator.Shared;
-using GitHub.Copilot.SDK;
+using GitHub.Copilot;
 
 namespace SkillValidator.Evaluate;
 
@@ -68,14 +68,14 @@ public static class AgentRunner
 
             var options = new CopilotClientOptions
             {
-                LogLevel = verbose ? "info" : "none",
+                LogLevel = verbose ? CopilotLogLevel.Info : CopilotLogLevel.None,
                 SessionFs = new SessionFsConfig
                 {
-                    InitialCwd = Environment.CurrentDirectory,
+                    InitialWorkingDirectory = Environment.CurrentDirectory,
                     SessionStatePath = "session-state",
                     Conventions = OperatingSystem.IsWindows()
-                        ? GitHub.Copilot.SDK.Rpc.SessionFsSetProviderConventions.Windows
-                        : GitHub.Copilot.SDK.Rpc.SessionFsSetProviderConventions.Posix,
+                        ? GitHub.Copilot.Rpc.SessionFsSetProviderConventions.Windows
+                        : GitHub.Copilot.Rpc.SessionFsSetProviderConventions.Posix,
                 },
             };
 
@@ -443,22 +443,19 @@ public static class AgentRunner
             Streaming = true,
             WorkingDirectory = workDir,
             SkillDirectories = [..skillDirs, ..noiseDirs],
-            ConfigDir = configDir,
+            ConfigDirectory = configDir,
             McpServers = sdkMcp,
             CustomAgents = customAgents,
             InfiniteSessions = new InfiniteSessionConfig { Enabled = false },
-            // SDK 0.3.0 requires a SessionFsProvider (abstract base class).
+            // The SDK requires a SessionFsProvider (abstract base class).
             // Without this, events.jsonl files are never written and
             // session replay data is lost.
-            CreateSessionFsHandler = _ => new LocalSessionFsHandler(configDir),
+            CreateSessionFsProvider = _ => new LocalSessionFsHandler(configDir),
             OnPermissionRequest = (request, _) =>
             {
-                // SDK 0.2.0: PermissionRequest only has Kind, no path data.
+                // PermissionRequest only carries kind info, no path data.
                 // Permission sandboxing is handled via Hooks.OnPreToolUse instead.
-                return Task.FromResult(new PermissionRequestResult
-                {
-                    Kind = PermissionRequestResultKind.Approved,
-                });
+                return Task.FromResult(GitHub.Copilot.Rpc.PermissionDecision.ApproveOnce());
             },
             Hooks = new SessionHooks
             {
@@ -580,7 +577,7 @@ public static class AgentRunner
 
             // Register event handler BEFORE SelectAsync so SubagentSelectedEvent
             // from the agent selection is captured in the events list.
-            session.On(evt =>
+            session.On<SessionEvent>(evt =>
             {
                 var agentEvent = new AgentEvent(
                     evt.Type,
