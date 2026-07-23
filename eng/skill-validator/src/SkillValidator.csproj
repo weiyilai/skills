@@ -53,22 +53,7 @@
     <PackageReference Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="18.1.0" />
 
     <!--
-      Transitive pin: GitHub.Copilot.SDK still drags in Nerdbank.MessagePack
-      1.0.2 which has a known high-severity vulnerability (GHSA-2cwq-pwfr-wcw3).
-      Fixed in 1.1.62.  Drop this once the upstream chain bumps past 1.1.62.
-    -->
-    <PackageReference Include="Nerdbank.MessagePack" Version="1.2.36" />
-
-    <!--
-      Transitive pin: GitHub.Copilot.SDK -> StreamJsonRpc 2.24.84 drags in
-      MessagePack 2.5.198 which has a known high-severity vulnerability
-      (GHSA-hv8m-jj95-wg3x, out-of-bounds read in LZ4 decompression). Patched in
-      the v2 line as of 2.5.301.  Drop this once the upstream chain bumps past it.
-    -->
-    <PackageReference Include="MessagePack" Version="3.1.8" />
-
-    <!--
-      Transitive pin: Microsoft.Data.Sqlite 10.0.7 -> SQLitePCLRaw.bundle_e_sqlite3
+      Transitive pin: Microsoft.Data.Sqlite 10.0.10 -> SQLitePCLRaw.bundle_e_sqlite3
       drags in the native SQLitePCLRaw.lib.e_sqlite3 2.1.11, which bundles a
       SQLite older than 3.50.2 and carries a known high-severity vulnerability
       (GHSA-2m69-gcr7-jv3q / CVE-2025-6965). 3.50.3 ships the patched SQLite

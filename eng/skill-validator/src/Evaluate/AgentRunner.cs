@@ -453,8 +453,10 @@ public static class AgentRunner
             CreateSessionFsProvider = _ => new LocalSessionFsHandler(configDir),
             OnPermissionRequest = (request, _) =>
             {
-                // PermissionRequest only carries kind info, no path data.
-                // Permission sandboxing is handled via Hooks.OnPreToolUse instead.
+                // PermissionRequest carries per-kind data (e.g. Read.Path,
+                // Write.FileName, Shell.FullCommandText/PossiblePaths), but we
+                // don't use it here: permission sandboxing is enforced via
+                // Hooks.OnPreToolUse instead, so this handler approves all.
                 return Task.FromResult(GitHub.Copilot.Rpc.PermissionDecision.ApproveOnce());
             },
             Hooks = new SessionHooks
